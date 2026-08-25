@@ -42,7 +42,7 @@ export function LedgerUploader({ upload, onUpload }: LedgerUploaderProps) {
     });
   }
 
-  async function useSample() {
+  async function loadSample() {
     setBusy(true);
     setError("");
     await fetch("/api/evaluation/seed", { method: "POST" });
@@ -107,7 +107,7 @@ export function LedgerUploader({ upload, onUpload }: LedgerUploaderProps) {
         <button
           type="button"
           className="text-sm text-primary hover:underline"
-          onClick={() => void useSample()}
+          onClick={() => void loadSample()}
           disabled={busy}
         >
           Use sample ledger

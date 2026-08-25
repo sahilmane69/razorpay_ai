@@ -18,9 +18,11 @@ export function RazorpayConnection({
   onSynced,
 }: RazorpayConnectionProps) {
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingSample, setLoadingSample] = useState(false);
   const [isConnected, setIsConnected] = useState(connected);
   const [storedCount, setStoredCount] = useState(stored);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   async function loadStatus() {
     const response = await fetch("/api/razorpay/sync");
@@ -37,6 +39,7 @@ export function RazorpayConnection({
   async function refresh() {
     setRefreshing(true);
     setError("");
+    setMessage("");
     if (isConnected) {
       const response = await fetch("/api/razorpay/sync", { method: "POST" });
       const payload = (await response.json()) as { error?: string; synced?: number };
@@ -58,6 +61,30 @@ export function RazorpayConnection({
     }
     await loadStatus();
     setRefreshing(false);
+  }
+
+  async function loadSampleData() {
+    setLoadingSample(true);
+    setError("");
+    setMessage("");
+    const response = await fetch("/api/razorpay/sample", { method: "POST" });
+    const payload = (await response.json()) as {
+      error?: string;
+      success?: boolean;
+      stored?: number;
+    };
+
+    if (!response.ok || !payload.success) {
+      setError(payload.error ?? "Could not load sample data. Please try again.");
+      setLoadingSample(false);
+      return;
+    }
+
+    const count = payload.stored ?? 0;
+    setMessage(`${count} sample transactions loaded`);
+    onSynced?.(count);
+    await loadStatus();
+    setLoadingSample(false);
   }
 
   return (
@@ -90,12 +117,24 @@ export function RazorpayConnection({
         </ul>
       </div>
 
-      <div className="mt-4">
-        <Button variant="secondary" onClick={() => void refresh()} disabled={refreshing}>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <Button
+          variant="secondary"
+          onClick={() => void refresh()}
+          disabled={refreshing || loadingSample}
+        >
           <ArrowsClockwise size={16} />
           {refreshing ? "Syncing…" : "Sync Razorpay"}
         </Button>
+        <Button
+          variant="secondary"
+          onClick={() => void loadSampleData()}
+          disabled={refreshing || loadingSample}
+        >
+          {loadingSample ? "Loading sample data..." : "Load sample data"}
+        </Button>
       </div>
+      {message && <p className="mt-3 text-sm text-match">{message}</p>}
       {error && <p className="mt-3 text-sm text-alert">{error}</p>}
     </Card>
   );

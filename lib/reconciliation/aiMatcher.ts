@@ -40,7 +40,10 @@ function normalizeGroqDecision(raw: any): Record<string, unknown> {
       decision: "unresolved",
       razorpayRecordIds: [],
       confidence: 0,
-      reason: typeof raw.reason === "string" ? raw.reason : "AI could not determine a confident match.",
+      reason:
+        typeof raw.reason === "string" && raw.reason.trim().length > 0
+          ? raw.reason
+          : "AI could not confidently resolve this transaction.",
     };
   }
 
@@ -57,7 +60,10 @@ function normalizeGroqDecision(raw: any): Record<string, unknown> {
       decision: ids.length > 0 ? "match" : "unresolved",
       razorpayRecordIds: ids,
       confidence: typeof raw.confidence === "number" ? raw.confidence : 0.9,
-      reason: typeof raw.reason === "string" ? raw.reason : "AI identified the strongest candidate match.",
+      reason:
+        typeof raw.reason === "string" && raw.reason.trim().length > 0
+          ? raw.reason
+          : "AI identified the strongest candidate match.",
     };
   }
 
@@ -144,8 +150,15 @@ You MUST return ONLY one JSON object using exactly this schema:
   "reason": "short explanation"
 }
 
-Rules:
+Rules for reason:
+- Return a short reason in plain merchant-friendly language.
+- one sentence only
+- maximum 16 words
+- explain the strongest reason for match or unresolved
+- no technical AI terms
+- no generic filler
 
+General Rules:
 - Do not return any other keys.
 - Do not return "status".
 - Do not return "match".
@@ -153,25 +166,18 @@ Rules:
 - Do not return "unresolved": true.
 - Do not return "candidateId".
 - Do not return "matches".
-- Always include all four keys:
-  decision
-  razorpayRecordIds
-  confidence
-  reason
+- Always include all four keys: decision, razorpayRecordIds, confidence, reason.
 
 If unresolved, return:
-
 {
   "decision": "unresolved",
   "razorpayRecordIds": [],
   "confidence": 0.0,
-  "reason": "explanation"
+  "reason": "short explanation"
 }
 
 If matched, razorpayRecordIds must contain only IDs from the provided candidates.
-
-Never invent IDs.
-Never invent amounts, dates, fees, or settlements.
+Never invent IDs, amounts, dates, fees, or settlements.
 Prefer unresolved when evidence is weak.`,
           },
           {
@@ -189,7 +195,7 @@ Prefer unresolved when evidence is weak.`,
                 decision: "match | unresolved",
                 razorpayRecordIds: ["candidate-id"],
                 confidence: "number between 0 and 1",
-                reason: "short explanation",
+                reason: "short explanation (max 16 words, 1 sentence)",
               },
             }),
           },

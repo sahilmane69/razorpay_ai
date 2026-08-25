@@ -4,21 +4,30 @@ import { ExceptionsList } from "@/components/reconcile/ExceptionsList";
 import { ReconciliationSummary } from "@/components/reconcile/ReconciliationSummary";
 import { TransactionsTable } from "@/components/reconcile/TransactionsTable";
 import { Button } from "@/components/ui/Button";
-import { BATCH_SUMMARY, EXCEPTIONS, RESULTS } from "@/lib/mock-data";
 import { exportResults } from "@/lib/reconcile";
+import type { BatchSummary, ExceptionItem, ReconciliationResult } from "@/lib/types";
 import { DownloadSimple } from "@phosphor-icons/react";
 import { useState } from "react";
 
 type ResultsViewProps = {
   heading?: string;
   subheading?: string;
+  summary: BatchSummary;
+  results: ReconciliationResult[];
+  exceptions: ExceptionItem[];
 };
 
 export function ResultsView({
   heading = "Reconciliation complete",
-  subheading = `${BATCH_SUMMARY.resolved} of ${BATCH_SUMMARY.totalRecords} transactions were resolved automatically.`,
+  subheading,
+  summary,
+  results,
+  exceptions,
 }: ResultsViewProps) {
   const [exportOpen, setExportOpen] = useState(false);
+  const resolvedText =
+    subheading ??
+    `${summary.resolved} of ${summary.totalRecords} transactions were resolved automatically.`;
 
   return (
     <div>
@@ -27,22 +36,22 @@ export function ResultsView({
           {heading}
         </h1>
         <p className="mt-2 max-w-xl text-[15px] leading-6 text-muted">
-          {subheading}
+          {resolvedText}
         </p>
       </div>
 
       <div className="mt-8">
-        <ReconciliationSummary summary={BATCH_SUMMARY} />
+        <ReconciliationSummary summary={summary} />
       </div>
 
       <section className="mt-10">
         <h2 className="mb-4 text-base font-semibold text-ink">Transactions</h2>
-        <TransactionsTable results={RESULTS} />
+        <TransactionsTable results={results} />
       </section>
 
       <section className="mt-10">
         <h2 className="mb-4 text-base font-semibold text-ink">Exceptions</h2>
-        <ExceptionsList exceptions={EXCEPTIONS} />
+        <ExceptionsList exceptions={exceptions} />
       </section>
 
       <div className="relative mt-8 flex justify-end">
@@ -56,7 +65,7 @@ export function ResultsView({
               type="button"
               className="block w-full px-3 py-2 text-left text-sm hover:bg-warm"
               onClick={() => {
-                exportResults("csv", RESULTS);
+                exportResults("csv", results);
                 setExportOpen(false);
               }}
             >
@@ -66,7 +75,7 @@ export function ResultsView({
               type="button"
               className="block w-full px-3 py-2 text-left text-sm hover:bg-warm"
               onClick={() => {
-                exportResults("json", RESULTS);
+                exportResults("json", results);
                 setExportOpen(false);
               }}
             >

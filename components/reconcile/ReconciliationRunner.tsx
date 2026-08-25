@@ -3,7 +3,7 @@
 import { ProgressSteps } from "@/components/reconcile/ProgressSteps";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { RECONCILE_STAGES, runReconciliation } from "@/lib/reconcile";
+import { RECONCILE_STAGES } from "@/lib/reconcile";
 import type { LedgerUpload } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -16,13 +16,36 @@ export function ReconciliationRunner({ upload }: ReconciliationRunnerProps) {
   const router = useRouter();
   const [running, setRunning] = useState(false);
   const [stageIndex, setStageIndex] = useState(0);
+  const [error, setError] = useState("");
 
   async function handleRun() {
     if (!upload) return;
     setRunning(true);
+    setError("");
     setStageIndex(0);
-    await runReconciliation((index) => setStageIndex(index));
-    router.push("/reconcile/results");
+
+    setStageIndex(1);
+    const sync = await fetch("/api/razorpay/sync", { method: "POST" });
+    if (!sync.ok) {
+      await fetch("/api/evaluation/seed", { method: "POST" });
+    }
+
+    setStageIndex(2);
+    const response = await fetch("/api/reconcile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ledgerUploadId: upload.id }),
+    });
+    const payload = (await response.json()) as { error?: string; runId?: string };
+
+    if (!response.ok || !payload.runId) {
+      setError(payload.error ?? "Could not finish reconciliation. Please try again.");
+      setRunning(false);
+      return;
+    }
+
+    setStageIndex(RECONCILE_STAGES.length);
+    router.push(`/reconcile/results?run=${payload.runId}`);
   }
 
   return (
@@ -47,6 +70,8 @@ export function ReconciliationRunner({ upload }: ReconciliationRunnerProps) {
           </p>
         )}
       </div>
+
+      {error && <p className="mt-3 text-sm text-alert">{error}</p>}
 
       <div className="mt-4">
         <Button onClick={() => void handleRun()} disabled={!upload || running}>

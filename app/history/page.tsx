@@ -1,8 +1,10 @@
 import { HistoryTable } from "@/components/history/HistoryTable";
 import { PageContainer } from "@/components/layout/PageContainer";
-import { HISTORY_RUNS } from "@/lib/mock-data";
+import { loadHistory } from "@/lib/queries/runs";
 
-export default function HistoryPage() {
+export default async function HistoryPage() {
+  const runs = await loadHistory();
+
   return (
     <PageContainer>
       <h1 className="text-[28px] font-semibold tracking-tight text-ink">
@@ -12,7 +14,7 @@ export default function HistoryPage() {
         Open a past run to see how it was matched and what still needs review.
       </p>
       <div className="mt-8">
-        <HistoryTable runs={HISTORY_RUNS} />
+        <HistoryTable runs={runs} />
       </div>
     </PageContainer>
   );

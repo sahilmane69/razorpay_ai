@@ -3,14 +3,14 @@ import { MetricCard } from "@/components/dashboard/MetricCard";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { buttonClassName } from "@/components/ui/Button";
-import { BATCH_SUMMARY, EXCEPTIONS, RESULTS } from "@/lib/mock-data";
+import { Card } from "@/components/ui/Card";
+import { percentLabel } from "@/lib/format";
+import { loadRunBundle } from "@/lib/queries/runs";
 import Link from "next/link";
 
-const recent = RESULTS.filter((result) =>
-  ["ORD-1038", "ORD-1041", "ORD-1052", "ORD-1042"].includes(result.orderId)
-);
+export default async function HomePage() {
+  const bundle = await loadRunBundle();
 
-export default function HomePage() {
   return (
     <PageContainer>
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
@@ -33,36 +33,54 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard
-          label="Match rate"
-          value={`${BATCH_SUMMARY.matchRate}%`}
-          hint={`${BATCH_SUMMARY.resolved} of ${BATCH_SUMMARY.totalRecords} records resolved`}
-        />
-        <MetricCard
-          label="Accuracy"
-          value={`${BATCH_SUMMARY.accuracy}%`}
-          hint="Verified against ground truth"
-        />
-        <MetricCard
-          label="Needs review"
-          value={String(BATCH_SUMMARY.unresolved)}
-          hint="Unresolved exceptions"
-        />
-        <MetricCard
-          label="Processing time"
-          value={`${BATCH_SUMMARY.processingTimeSeconds}s`}
-          hint={`${BATCH_SUMMARY.totalRecords} records processed`}
-        />
-      </div>
+      {!bundle ? (
+        <Card className="mt-8 p-8">
+          <h2 className="text-base font-semibold text-ink">No reconciliations yet</h2>
+          <p className="mt-2 text-sm text-muted">
+            Upload your ledger and run your first reconciliation.
+          </p>
+        </Card>
+      ) : (
+        <>
+          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <MetricCard
+              label="Match rate"
+              value={percentLabel(bundle.summary.matchRate)}
+              hint={`${bundle.summary.resolved} of ${bundle.summary.totalRecords} records resolved`}
+            />
+            <MetricCard
+              label="Accuracy"
+              value={percentLabel(bundle.summary.accuracy)}
+              hint={
+                bundle.summary.accuracy === null
+                  ? "Available on evaluation datasets"
+                  : "Verified against ground truth"
+              }
+            />
+            <MetricCard
+              label="Needs review"
+              value={String(bundle.summary.unresolved)}
+              hint="Unresolved exceptions"
+            />
+            <MetricCard
+              label="Processing time"
+              value={`${bundle.summary.processingTimeSeconds}s`}
+              hint={`${bundle.summary.totalRecords} records processed`}
+            />
+          </div>
 
-      <div className="mt-10">
-        <RecentTransactions results={recent} />
-      </div>
+          <div className="mt-10">
+            <RecentTransactions results={bundle.results.slice(0, 8)} />
+          </div>
 
-      <div className="mt-10">
-        <ExceptionPreview exceptions={EXCEPTIONS} />
-      </div>
+          <div className="mt-10">
+            <ExceptionPreview
+              exceptions={bundle.exceptions.filter((item) => item.status !== "RESOLVED").slice(0, 3)}
+              runId={bundle.run.id}
+            />
+          </div>
+        </>
+      )}
     </PageContainer>
   );
 }

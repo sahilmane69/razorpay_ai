@@ -3,17 +3,58 @@
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { fetchRazorpayTransactions } from "@/lib/reconcile";
-import { RAZORPAY_CONNECTION } from "@/lib/mock-data";
 import { ArrowsClockwise, PlugsConnected } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export function RazorpayConnection() {
+type RazorpayConnectionProps = {
+  onSynced?: (count: number) => void;
+};
+
+export function RazorpayConnection({ onSynced }: RazorpayConnectionProps) {
   const [refreshing, setRefreshing] = useState(false);
+  const [connected, setConnected] = useState(false);
+  const [stored, setStored] = useState(0);
+  const [error, setError] = useState("");
+
+  async function loadStatus() {
+    const response = await fetch("/api/razorpay/sync");
+    const payload = (await response.json()) as {
+      connected?: boolean;
+      stored?: number;
+    };
+    if (response.ok) {
+      setConnected(Boolean(payload.connected));
+      setStored(payload.stored ?? 0);
+    }
+  }
+
+  useEffect(() => {
+    void loadStatus();
+  }, []);
 
   async function refresh() {
     setRefreshing(true);
-    await fetchRazorpayTransactions();
+    setError("");
+    if (connected) {
+      const response = await fetch("/api/razorpay/sync", { method: "POST" });
+      const payload = (await response.json()) as { error?: string; synced?: number };
+      if (!response.ok) {
+        setError(payload.error ?? "Could not sync Razorpay. Please try again.");
+        setRefreshing(false);
+        return;
+      }
+      onSynced?.(payload.synced ?? 0);
+    } else {
+      const seed = await fetch("/api/evaluation/seed", { method: "POST" });
+      const payload = (await seed.json()) as { error?: string; seeded?: number };
+      if (!seed.ok) {
+        setError(payload.error ?? "Could not load Razorpay sample data.");
+        setRefreshing(false);
+        return;
+      }
+      onSynced?.(payload.seeded ?? 0);
+    }
+    await loadStatus();
     setRefreshing(false);
   }
 
@@ -31,24 +72,29 @@ export function RazorpayConnection() {
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2">
             <PlugsConnected size={20} className="text-primary" />
-            <p className="text-sm font-medium text-ink">
-              {RAZORPAY_CONNECTION.accountName}
-            </p>
+            <p className="text-sm font-medium text-ink">Razorpay</p>
           </div>
-          <Badge tone="matched">Connected</Badge>
+          <Badge tone={connected || stored > 0 ? "matched" : "review"}>
+            {connected || stored > 0 ? "Connected" : "Not connected"}
+          </Badge>
         </div>
         <ul className="mt-4 space-y-1.5 text-sm text-muted">
-          <li>Payments available: {RAZORPAY_CONNECTION.paymentsAvailable}</li>
-          <li>Settlements available: {RAZORPAY_CONNECTION.settlementsAvailable}</li>
+          <li>
+            {connected ? "Payments sync available" : `${stored} payments available`}
+          </li>
+          <li>
+            {connected ? "Settlements sync available" : "Use Sync Razorpay before you run"}
+          </li>
         </ul>
       </div>
 
       <div className="mt-4">
         <Button variant="secondary" onClick={() => void refresh()} disabled={refreshing}>
           <ArrowsClockwise size={16} />
-          {refreshing ? "Refreshing…" : "Refresh data"}
+          {refreshing ? "Syncing…" : "Sync Razorpay"}
         </Button>
       </div>
+      {error && <p className="mt-3 text-sm text-alert">{error}</p>}
     </Card>
   );
 }

@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { parseLedgerCsv, sampleLedger } from "@/lib/reconcile";
 import type { LedgerUpload } from "@/lib/types";
 import { FileCsv, UploadSimple } from "@phosphor-icons/react";
 import { useRef, useState } from "react";
@@ -15,12 +14,47 @@ type LedgerUploaderProps = {
 export function LedgerUploader({ upload, onUpload }: LedgerUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
-  async function handleFile(file: File) {
+  async function sendFile(file: File) {
     setBusy(true);
-    const parsed = await parseLedgerCsv(file);
-    onUpload(parsed);
+    setError("");
+    const form = new FormData();
+    form.append("file", file);
+    const response = await fetch("/api/ledger/upload", { method: "POST", body: form });
+    const payload = (await response.json()) as {
+      error?: string;
+      uploadId?: string;
+      fileName?: string;
+      accepted?: number;
+      rejected?: number;
+    };
     setBusy(false);
+    if (!response.ok || !payload.uploadId) {
+      setError(payload.error ?? "Could not upload this ledger.");
+      return;
+    }
+    onUpload({
+      id: payload.uploadId,
+      fileName: payload.fileName ?? file.name,
+      rowCount: payload.accepted ?? 0,
+      rejectedCount: payload.rejected,
+    });
+  }
+
+  async function useSample() {
+    setBusy(true);
+    setError("");
+    await fetch("/api/evaluation/seed", { method: "POST" });
+    const csv = await fetch("/sample-ledger.csv");
+    if (!csv.ok) {
+      setBusy(false);
+      setError("Sample ledger is not available.");
+      return;
+    }
+    const blob = await csv.blob();
+    const file = new File([blob], "evaluation-ledger.csv", { type: "text/csv" });
+    await sendFile(file);
   }
 
   return (
@@ -39,6 +73,9 @@ export function LedgerUploader({ upload, onUpload }: LedgerUploaderProps) {
             <FileCsv size={28} className="text-primary" />
             <p className="mt-3 text-sm font-medium text-ink">{upload.fileName}</p>
             <p className="mt-1 text-sm text-muted">{upload.rowCount} records</p>
+            {upload.rejectedCount ? (
+              <p className="mt-1 text-sm text-alert">{upload.rejectedCount} rows rejected</p>
+            ) : null}
           </>
         ) : (
           <>
@@ -55,7 +92,7 @@ export function LedgerUploader({ upload, onUpload }: LedgerUploaderProps) {
         className="hidden"
         onChange={(event) => {
           const file = event.target.files?.[0];
-          if (file) void handleFile(file);
+          if (file) void sendFile(file);
         }}
       />
 
@@ -70,11 +107,13 @@ export function LedgerUploader({ upload, onUpload }: LedgerUploaderProps) {
         <button
           type="button"
           className="text-sm text-primary hover:underline"
-          onClick={() => onUpload(sampleLedger())}
+          onClick={() => void useSample()}
+          disabled={busy}
         >
           Use sample ledger
         </button>
       </div>
+      {error && <p className="mt-3 text-sm text-alert">{error}</p>}
     </Card>
   );
 }

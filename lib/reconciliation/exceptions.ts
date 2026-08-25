@@ -1,3 +1,4 @@
+import { formatINR } from "@/lib/money";
 import { sameReference, selectCandidates } from "./candidateSelector";
 import type {
   MatchResult,
@@ -54,7 +55,7 @@ export function classifyExceptions(
         razorpayRecords: [record],
         method: "unresolved",
         status: "review",
-        reason: `Razorpay recorded ${record.grossAmountPaise} paise against this order, which does not match the ledger amount.`,
+        reason: `The Razorpay payment for this order is ${formatINR(record.grossAmountPaise)}, which does not match the ledger amount of ${formatINR(ledger.amountPaise)}.`,
       };
       resolvedAsReview.push(review);
       exceptions.push({

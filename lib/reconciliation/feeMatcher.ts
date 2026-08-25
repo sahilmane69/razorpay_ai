@@ -1,6 +1,14 @@
 import { formatINR } from "@/lib/money";
 import { sameReference } from "./candidateSelector";
-import type { MatchResult, NormalizedLedgerRecord, NormalizedRazorpayRecord } from "./types";
+import { MATCH_CONSTANTS, type MatchResult, type NormalizedLedgerRecord, type NormalizedRazorpayRecord } from "./types";
+
+function withinDateWindow(
+  ledger: NormalizedLedgerRecord,
+  record: NormalizedRazorpayRecord
+) {
+  const days = Math.abs(ledger.date.getTime() - record.date.getTime()) / (1000 * 60 * 60 * 24);
+  return days <= MATCH_CONSTANTS.dateWindowDays;
+}
 
 export function feeMatcher(
   ledgers: NormalizedLedgerRecord[],
@@ -13,6 +21,7 @@ export function feeMatcher(
   for (const ledger of ledgers) {
     const candidates = razorpayRecords.filter((record) => {
       if (usedIds.has(record.id) || !sameReference(ledger, record)) return false;
+      if (!withinDateWindow(ledger, record)) return false;
       if (record.grossAmountPaise !== ledger.amountPaise) return false;
       const charges = record.feePaise + record.taxPaise;
       if (charges <= 0) return false;

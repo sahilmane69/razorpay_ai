@@ -6,9 +6,12 @@ import Link from "next/link";
 
 type ExceptionPreviewProps = {
   exceptions: ExceptionItem[];
+  runId?: string;
 };
 
-export function ExceptionPreview({ exceptions }: ExceptionPreviewProps) {
+export function ExceptionPreview({ exceptions, runId }: ExceptionPreviewProps) {
+  if (exceptions.length === 0) return null;
+
   return (
     <section>
       <h2 className="mb-3 text-base font-semibold text-ink">
@@ -17,7 +20,7 @@ export function ExceptionPreview({ exceptions }: ExceptionPreviewProps) {
       <div className="space-y-3">
         {exceptions.map((item) => (
           <Card
-            key={item.orderId}
+            key={item.id ?? item.orderId}
             className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
           >
             <div>
@@ -29,7 +32,10 @@ export function ExceptionPreview({ exceptions }: ExceptionPreviewProps) {
               </p>
               <p className="mt-1 text-sm text-muted">{item.explanation}</p>
             </div>
-            <Link href="/reconcile/results" className={buttonClassName("secondary", "sm")}>
+            <Link
+              href={runId ? `/reconcile/results?run=${runId}` : "/reconcile/results"}
+              className={buttonClassName("secondary", "sm")}
+            >
               Review
             </Link>
           </Card>

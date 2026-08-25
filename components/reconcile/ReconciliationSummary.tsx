@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/Card";
+import { percentLabel } from "@/lib/format";
 import type { BatchSummary } from "@/lib/types";
 
 type ReconciliationSummaryProps = {
@@ -7,8 +8,8 @@ type ReconciliationSummaryProps = {
 
 export function ReconciliationSummary({ summary }: ReconciliationSummaryProps) {
   const metrics = [
-    { label: "Match rate", value: `${summary.matchRate}%` },
-    { label: "Accuracy", value: `${summary.accuracy}%` },
+    { label: "Match rate", value: percentLabel(summary.matchRate) },
+    { label: "Accuracy", value: percentLabel(summary.accuracy) },
     { label: "Auto-resolved", value: String(summary.resolved) },
     { label: "Needs review", value: String(summary.unresolved) },
   ];
@@ -31,6 +32,8 @@ export function ReconciliationSummary({ summary }: ReconciliationSummaryProps) {
         Rule-based: {summary.ruleBased}
         <span className="mx-2 text-line">·</span>
         AI assisted: {summary.aiAssisted}
+        <span className="mx-2 text-line">·</span>
+        Processed in {summary.processingTimeSeconds}s
       </p>
     </div>
   );

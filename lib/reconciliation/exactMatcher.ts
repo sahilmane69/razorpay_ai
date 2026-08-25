@@ -1,5 +1,13 @@
 import { sameReference } from "./candidateSelector";
-import type { MatchResult, NormalizedLedgerRecord, NormalizedRazorpayRecord } from "./types";
+import { MATCH_CONSTANTS, type MatchResult, type NormalizedLedgerRecord, type NormalizedRazorpayRecord } from "./types";
+
+function withinDateWindow(
+  ledger: NormalizedLedgerRecord,
+  record: NormalizedRazorpayRecord
+) {
+  const days = Math.abs(ledger.date.getTime() - record.date.getTime()) / (1000 * 60 * 60 * 24);
+  return days <= MATCH_CONSTANTS.dateWindowDays;
+}
 
 export function exactMatcher(
   ledgers: NormalizedLedgerRecord[],
@@ -15,7 +23,8 @@ export function exactMatcher(
         !usedIds.has(record.id) &&
         sameReference(ledger, record) &&
         record.grossAmountPaise === ledger.amountPaise &&
-        record.feePaise + record.taxPaise === 0
+        record.feePaise + record.taxPaise === 0 &&
+        withinDateWindow(ledger, record)
     );
 
     if (candidates.length === 1) {

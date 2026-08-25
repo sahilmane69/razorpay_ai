@@ -1,0 +1,752 @@
+{
+  "records": [
+    {
+      "orderId": "EVAL-0001",
+      "expectedPaymentIds": [
+        "pay_eval_001"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0002",
+      "expectedPaymentIds": [
+        "pay_eval_002"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0003",
+      "expectedPaymentIds": [
+        "pay_eval_003"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0004",
+      "expectedPaymentIds": [
+        "pay_eval_004"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0005",
+      "expectedPaymentIds": [
+        "pay_eval_005"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0006",
+      "expectedPaymentIds": [
+        "pay_eval_006"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0007",
+      "expectedPaymentIds": [
+        "pay_eval_007"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0008",
+      "expectedPaymentIds": [
+        "pay_eval_008"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0009",
+      "expectedPaymentIds": [
+        "pay_eval_009"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0010",
+      "expectedPaymentIds": [
+        "pay_eval_010"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0011",
+      "expectedPaymentIds": [
+        "pay_eval_011"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0012",
+      "expectedPaymentIds": [
+        "pay_eval_012"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0013",
+      "expectedPaymentIds": [
+        "pay_eval_013"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0014",
+      "expectedPaymentIds": [
+        "pay_eval_014"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0015",
+      "expectedPaymentIds": [
+        "pay_eval_015"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0016",
+      "expectedPaymentIds": [
+        "pay_eval_016"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0017",
+      "expectedPaymentIds": [
+        "pay_eval_017"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0018",
+      "expectedPaymentIds": [
+        "pay_eval_018"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0019",
+      "expectedPaymentIds": [
+        "pay_eval_019"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0020",
+      "expectedPaymentIds": [
+        "pay_eval_020"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0021",
+      "expectedPaymentIds": [
+        "pay_eval_021"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0022",
+      "expectedPaymentIds": [
+        "pay_eval_022"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0023",
+      "expectedPaymentIds": [
+        "pay_eval_023"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0024",
+      "expectedPaymentIds": [
+        "pay_eval_024"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0025",
+      "expectedPaymentIds": [
+        "pay_eval_025"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0026",
+      "expectedPaymentIds": [
+        "pay_eval_026"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0027",
+      "expectedPaymentIds": [
+        "pay_eval_027"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0028",
+      "expectedPaymentIds": [
+        "pay_eval_028"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0029",
+      "expectedPaymentIds": [
+        "pay_eval_029"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0030",
+      "expectedPaymentIds": [
+        "pay_eval_030"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0031",
+      "expectedPaymentIds": [
+        "pay_eval_031"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0032",
+      "expectedPaymentIds": [
+        "pay_eval_032"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0033",
+      "expectedPaymentIds": [
+        "pay_eval_033"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0034",
+      "expectedPaymentIds": [
+        "pay_eval_034"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0035",
+      "expectedPaymentIds": [
+        "pay_eval_035"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0036",
+      "expectedPaymentIds": [
+        "pay_eval_036"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0037",
+      "expectedPaymentIds": [
+        "pay_eval_037"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0038",
+      "expectedPaymentIds": [
+        "pay_eval_038"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0039",
+      "expectedPaymentIds": [
+        "pay_eval_039"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0040",
+      "expectedPaymentIds": [
+        "pay_eval_040"
+      ],
+      "expectedMethod": "exact",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0041",
+      "expectedPaymentIds": [
+        "pay_eval_041"
+      ],
+      "expectedMethod": "fee_adjusted",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0042",
+      "expectedPaymentIds": [
+        "pay_eval_042"
+      ],
+      "expectedMethod": "fee_adjusted",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0043",
+      "expectedPaymentIds": [
+        "pay_eval_043"
+      ],
+      "expectedMethod": "fee_adjusted",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0044",
+      "expectedPaymentIds": [
+        "pay_eval_044"
+      ],
+      "expectedMethod": "fee_adjusted",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0045",
+      "expectedPaymentIds": [
+        "pay_eval_045"
+      ],
+      "expectedMethod": "fee_adjusted",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0046",
+      "expectedPaymentIds": [
+        "pay_eval_046"
+      ],
+      "expectedMethod": "fee_adjusted",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0047",
+      "expectedPaymentIds": [
+        "pay_eval_047"
+      ],
+      "expectedMethod": "fee_adjusted",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0048",
+      "expectedPaymentIds": [
+        "pay_eval_048"
+      ],
+      "expectedMethod": "fee_adjusted",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0049",
+      "expectedPaymentIds": [
+        "pay_eval_049"
+      ],
+      "expectedMethod": "fee_adjusted",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0050",
+      "expectedPaymentIds": [
+        "pay_eval_050"
+      ],
+      "expectedMethod": "fee_adjusted",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0051",
+      "expectedPaymentIds": [
+        "pay_eval_051"
+      ],
+      "expectedMethod": "fee_adjusted",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0052",
+      "expectedPaymentIds": [
+        "pay_eval_052"
+      ],
+      "expectedMethod": "fee_adjusted",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0053",
+      "expectedPaymentIds": [
+        "pay_eval_053"
+      ],
+      "expectedMethod": "fee_adjusted",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0054",
+      "expectedPaymentIds": [
+        "pay_eval_054"
+      ],
+      "expectedMethod": "fee_adjusted",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0055",
+      "expectedPaymentIds": [
+        "pay_eval_055"
+      ],
+      "expectedMethod": "fee_adjusted",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0056",
+      "expectedPaymentIds": [
+        "pay_eval_056",
+        "pay_eval_057"
+      ],
+      "expectedMethod": "split",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0057",
+      "expectedPaymentIds": [
+        "pay_eval_058",
+        "pay_eval_059"
+      ],
+      "expectedMethod": "split",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0058",
+      "expectedPaymentIds": [
+        "pay_eval_060",
+        "pay_eval_061"
+      ],
+      "expectedMethod": "split",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0059",
+      "expectedPaymentIds": [
+        "pay_eval_062",
+        "pay_eval_063"
+      ],
+      "expectedMethod": "split",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0060",
+      "expectedPaymentIds": [
+        "pay_eval_064",
+        "pay_eval_065"
+      ],
+      "expectedMethod": "split",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0061",
+      "expectedPaymentIds": [
+        "pay_eval_066",
+        "pay_eval_067"
+      ],
+      "expectedMethod": "split",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0062",
+      "expectedPaymentIds": [
+        "pay_eval_068",
+        "pay_eval_069"
+      ],
+      "expectedMethod": "split",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0063",
+      "expectedPaymentIds": [
+        "pay_eval_070",
+        "pay_eval_071"
+      ],
+      "expectedMethod": "split",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0064",
+      "expectedPaymentIds": [
+        "pay_eval_072",
+        "pay_eval_073"
+      ],
+      "expectedMethod": "split",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0065",
+      "expectedPaymentIds": [
+        "pay_eval_074",
+        "pay_eval_075"
+      ],
+      "expectedMethod": "split",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0066",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0067",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0068",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0069",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0070",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0071",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0072",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0073",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0074",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0075",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0076",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0077",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0078",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0079",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0080",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0081",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0082",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0083",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0084",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0085",
+      "expectedPaymentIds": [
+        "pay_eval_093"
+      ],
+      "expectedMethod": "ai_assisted",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0086",
+      "expectedPaymentIds": [
+        "pay_eval_094"
+      ],
+      "expectedMethod": "ai_assisted",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0087",
+      "expectedPaymentIds": [
+        "pay_eval_095"
+      ],
+      "expectedMethod": "ai_assisted",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0088",
+      "expectedPaymentIds": [
+        "pay_eval_096"
+      ],
+      "expectedMethod": "ai_assisted",
+      "shouldMatch": true
+    },
+    {
+      "orderId": "EVAL-0089",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0090",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0091",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0092",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0093",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0094",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0095",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0096",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0097",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0098",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0099",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    },
+    {
+      "orderId": "EVAL-0100",
+      "expectedPaymentIds": [],
+      "expectedMethod": "unresolved",
+      "shouldMatch": false
+    }
+  ]
+}

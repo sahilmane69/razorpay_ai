@@ -89,7 +89,7 @@ export async function aiMatcher(
     try {
       console.log("[AI] Calling Groq");
       const completion = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+        model: process.env.GROQ_MODEL || "openai/gpt-oss-20b",
         temperature: 0,
         response_format: {
           type: "json_object",

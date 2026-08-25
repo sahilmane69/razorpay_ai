@@ -6,48 +6,68 @@ import { Input } from "@/components/ui/Input";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 
 export function LoginForm() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  async function onSubmit(formData: FormData) {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (busy) return;
     setBusy(true);
     setError("");
-    const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: String(formData.get("email") ?? ""),
-      password: String(formData.get("password") ?? ""),
-    });
-    if (signInError) {
-      setError("Could not sign in. Check your email and password.");
+
+    try {
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        setError(signInError.message);
+        setBusy(false);
+        return;
+      }
+
+      router.push("/");
+      router.refresh();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Could not sign in.");
       setBusy(false);
-      return;
     }
-    router.push("/");
-    router.refresh();
-  }
+  };
 
   return (
     <Card className="mx-auto w-full max-w-md p-6">
       <h1 className="text-[28px] font-semibold tracking-tight text-ink">Sign in</h1>
       <p className="mt-2 text-sm text-muted">Use your business email to open ReconFlow.</p>
-      <form
-        className="mt-6 space-y-4"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void onSubmit(new FormData(event.currentTarget));
-        }}
-      >
+      <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
         <label className="block text-sm">
           <span className="mb-1.5 block text-muted">Business email</span>
-          <Input name="email" type="email" required autoComplete="email" />
+          <Input
+            name="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+          />
         </label>
         <label className="block text-sm">
           <span className="mb-1.5 block text-muted">Password</span>
-          <Input name="password" type="password" required autoComplete="current-password" />
+          <Input
+            name="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+          />
         </label>
         {error && <p className="text-sm text-alert">{error}</p>}
         <Button type="submit" disabled={busy} className="w-full">
@@ -63,3 +83,4 @@ export function LoginForm() {
     </Card>
   );
 }
+

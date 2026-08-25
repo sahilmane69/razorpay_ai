@@ -6,80 +6,111 @@ import { Input } from "@/components/ui/Input";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 
 export function RegisterForm() {
   const router = useRouter();
+  const [businessName, setBusinessName] = useState("");
+  const [ownerName, setOwnerName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
-  async function onSubmit(formData: FormData) {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (busy) return;
     setBusy(true);
     setError("");
     setMessage("");
-    const supabase = createClient();
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email: String(formData.get("email") ?? ""),
-      password: String(formData.get("password") ?? ""),
-      options: {
-        data: {
-          business_name: String(formData.get("businessName") ?? ""),
-          owner_name: String(formData.get("ownerName") ?? ""),
-        },
-      },
-    });
 
-    if (signUpError) {
-      setError("Could not create the account. Please try again.");
+    try {
+      const supabase = createClient();
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            business_name: businessName,
+            owner_name: ownerName,
+          },
+        },
+      });
+
+      if (signUpError) {
+        setError(signUpError.message);
+        setBusy(false);
+        return;
+      }
+
+      if (data.user && data.session) {
+        await supabase.from("businesses").upsert(
+          {
+            owner_user_id: data.user.id,
+            name: businessName,
+            owner_name: ownerName,
+          },
+          { onConflict: "owner_user_id" }
+        );
+        router.push("/");
+        router.refresh();
+        return;
+      }
+
+      setMessage("Account created. Please check your email to confirm your account.");
       setBusy(false);
-      return;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Could not create account.");
+      setBusy(false);
     }
-
-    if (data.user && data.session) {
-      await supabase.from("businesses").upsert(
-        {
-          owner_user_id: data.user.id,
-          name: String(formData.get("businessName") ?? ""),
-          owner_name: String(formData.get("ownerName") ?? ""),
-        },
-        { onConflict: "owner_user_id" }
-      );
-      router.push("/");
-      router.refresh();
-      return;
-    }
-
-    setMessage("Account created. Sign in with your business email.");
-    setBusy(false);
-  }
+  };
 
   return (
     <Card className="mx-auto w-full max-w-md p-6">
       <h1 className="text-[28px] font-semibold tracking-tight text-ink">Create account</h1>
       <p className="mt-2 text-sm text-muted">One login for one business.</p>
-      <form
-        className="mt-6 space-y-4"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void onSubmit(new FormData(event.currentTarget));
-        }}
-      >
+      <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
         <label className="block text-sm">
           <span className="mb-1.5 block text-muted">Business name</span>
-          <Input name="businessName" required />
+          <Input
+            name="businessName"
+            value={businessName}
+            onChange={(e) => setBusinessName(e.target.value)}
+            required
+          />
         </label>
         <label className="block text-sm">
           <span className="mb-1.5 block text-muted">Owner name</span>
-          <Input name="ownerName" required />
+          <Input
+            name="ownerName"
+            value={ownerName}
+            onChange={(e) => setOwnerName(e.target.value)}
+            required
+          />
         </label>
         <label className="block text-sm">
           <span className="mb-1.5 block text-muted">Business email</span>
-          <Input name="email" type="email" required autoComplete="email" />
+          <Input
+            name="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+          />
         </label>
         <label className="block text-sm">
           <span className="mb-1.5 block text-muted">Password</span>
-          <Input name="password" type="password" required minLength={6} autoComplete="new-password" />
+          <Input
+            name="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+            autoComplete="new-password"
+          />
         </label>
         {error && <p className="text-sm text-alert">{error}</p>}
         {message && <p className="text-sm text-match">{message}</p>}
@@ -96,3 +127,4 @@ export function RegisterForm() {
     </Card>
   );
 }
+

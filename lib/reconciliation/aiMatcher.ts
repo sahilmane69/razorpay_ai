@@ -1,10 +1,17 @@
 import "server-only";
 
 import { formatINR } from "@/lib/money";
-import OpenAI from "openai";
+import Groq from "groq-sdk";
 import { z } from "zod";
 import { selectCandidates } from "./candidateSelector";
-import { MATCH_CONSTANTS, type AIMatchDecision, type MatchResult, type NormalizedLedgerRecord, type NormalizedRazorpayRecord, type ProposedException } from "./types";
+import {
+  MATCH_CONSTANTS,
+  type AIMatchDecision,
+  type MatchResult,
+  type NormalizedLedgerRecord,
+  type NormalizedRazorpayRecord,
+  type ProposedException,
+} from "./types";
 
 const DecisionSchema = z.object({
   ledgerRecordId: z.string().min(1),
@@ -14,8 +21,8 @@ const DecisionSchema = z.object({
   reason: z.string().min(1).max(600),
 });
 
-const openai = process.env.OPENAI_API_KEY
-  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+const groq = process.env.GROQ_API_KEY
+  ? new Groq({ apiKey: process.env.GROQ_API_KEY })
   : null;
 
 function toPromptRecord(record: NormalizedRazorpayRecord) {
@@ -96,9 +103,7 @@ export async function aiMatcher(
       type:
         decision.decision === "match" && decision.confidence < MATCH_CONSTANTS.aiAcceptConfidence
           ? "AI_LOW_CONFIDENCE"
-          : candidates.length > 1
-            ? "AMBIGUOUS_MATCH"
-            : "AMBIGUOUS_MATCH",
+          : "AMBIGUOUS_MATCH",
       reason:
         candidates.length > 1
           ? "Two Razorpay payments are plausible matches for this ledger entry, but neither has enough evidence to resolve automatically."
@@ -123,30 +128,40 @@ async function decide(
       "Two Razorpay payments are plausible matches for this ledger entry, but neither has enough evidence to resolve automatically.",
   };
 
-  if (!openai) return fallback;
+  if (!groq) return fallback;
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+    const input = {
+      ledger: {
+        id: ledger.id,
+        orderId: ledger.orderId,
+        amount: formatINR(ledger.amountPaise),
+        date: ledger.date.toISOString().slice(0, 10),
+      },
+      candidates: candidates.map(toPromptRecord),
+    };
+
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
       temperature: 0,
-      response_format: { type: "json_object" },
+      response_format: {
+        type: "json_object",
+      },
       messages: [
         {
           role: "system",
-          content:
-            "You assist with financial reconciliation.\n\nOnly evaluate the records provided.\n\nNever invent payments, identifiers, amounts, fees, dates, or settlement records.\n\nPrefer unresolved over an uncertain match.\n\nA financial record must not be automatically matched unless evidence is sufficiently strong.\n\nReturn only the required structured result as JSON with keys ledgerRecordId, razorpayRecordIds, decision, confidence, reason.",
+          content: `
+You assist with financial reconciliation.
+
+Only evaluate the records provided.
+Never invent payments, identifiers, amounts, fees, dates, or settlements.
+Prefer unresolved over an uncertain match.
+Return valid JSON only.
+          `,
         },
         {
           role: "user",
-          content: JSON.stringify({
-            ledger: {
-              id: ledger.id,
-              orderId: ledger.orderId,
-              amount: formatINR(ledger.amountPaise),
-              date: ledger.date.toISOString().slice(0, 10),
-            },
-            candidates: candidates.map(toPromptRecord),
-          }),
+          content: JSON.stringify(input),
         },
       ],
     });
@@ -161,7 +176,7 @@ async function decide(
       razorpayRecordIds: parsed.razorpayRecordIds.filter((id) => allowed.has(id)),
     };
   } catch (error) {
-    console.error("AI matcher failed", error);
+    console.error("Groq AI matcher failed:", error);
     return fallback;
   }
 }

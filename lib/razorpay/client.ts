@@ -42,15 +42,28 @@ async function paginate<T>(
 
 export async function fetchPayments() {
   const client = getRazorpayClient();
-  return paginate((skip, count) => client.payments.all({ skip, count }) as Promise<Paged<Record<string, unknown>>>);
+  return paginate(async (skip, count) => {
+    const page = (await client.payments.all({ skip, count })) as unknown as Paged<
+      Record<string, unknown>
+    >;
+    return page;
+  });
 }
 
 export async function fetchSettlements() {
   const client = getRazorpayClient();
-  return paginate((skip, count) => client.settlements.all({ skip, count }) as Promise<Paged<Record<string, unknown>>>);
+  return paginate(async (skip, count) => {
+    const page = (await client.settlements.all({ skip, count })) as unknown as Paged<
+      Record<string, unknown>
+    >;
+    return page;
+  });
 }
 
 export async function fetchSettlementDetails(settlementId: string) {
   const client = getRazorpayClient();
-  return client.settlements.fetch(settlementId) as Promise<Record<string, unknown>>;
+  return (await client.settlements.fetch(settlementId)) as unknown as Record<
+    string,
+    unknown
+  >;
 }

@@ -16,7 +16,7 @@ export function selectCandidates(
   ledger: NormalizedLedgerRecord,
   razorpayRecords: NormalizedRazorpayRecord[],
   usedIds: Set<string>,
-  limit = MATCH_CONSTANTS.maxAiCandidates
+  limit: number = MATCH_CONSTANTS.maxAiCandidates
 ): NormalizedRazorpayRecord[] {
   const scored = razorpayRecords
     .filter((record) => !usedIds.has(record.id))

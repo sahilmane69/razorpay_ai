@@ -6,13 +6,19 @@ import { ReconciliationRunner } from "@/components/reconcile/ReconciliationRunne
 import type { LedgerUpload } from "@/lib/types";
 import { useState } from "react";
 
-export function ReconcileWorkflow() {
+export function ReconcileWorkflow({
+  razorpayConnected,
+  razorpayStored,
+}: {
+  razorpayConnected: boolean;
+  razorpayStored: number;
+}) {
   const [upload, setUpload] = useState<LedgerUpload | null>(null);
 
   return (
     <div className="grid gap-4 lg:grid-cols-3">
       <LedgerUploader upload={upload} onUpload={setUpload} />
-      <RazorpayConnection />
+      <RazorpayConnection connected={razorpayConnected} stored={razorpayStored} />
       <ReconciliationRunner upload={upload} />
     </div>
   );

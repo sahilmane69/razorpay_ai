@@ -4,16 +4,22 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ArrowsClockwise, PlugsConnected } from "@phosphor-icons/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type RazorpayConnectionProps = {
+  connected: boolean;
+  stored: number;
   onSynced?: (count: number) => void;
 };
 
-export function RazorpayConnection({ onSynced }: RazorpayConnectionProps) {
+export function RazorpayConnection({
+  connected,
+  stored,
+  onSynced,
+}: RazorpayConnectionProps) {
   const [refreshing, setRefreshing] = useState(false);
-  const [connected, setConnected] = useState(false);
-  const [stored, setStored] = useState(0);
+  const [isConnected, setIsConnected] = useState(connected);
+  const [storedCount, setStoredCount] = useState(stored);
   const [error, setError] = useState("");
 
   async function loadStatus() {
@@ -23,19 +29,15 @@ export function RazorpayConnection({ onSynced }: RazorpayConnectionProps) {
       stored?: number;
     };
     if (response.ok) {
-      setConnected(Boolean(payload.connected));
-      setStored(payload.stored ?? 0);
+      setIsConnected(Boolean(payload.connected));
+      setStoredCount(payload.stored ?? 0);
     }
   }
-
-  useEffect(() => {
-    void loadStatus();
-  }, []);
 
   async function refresh() {
     setRefreshing(true);
     setError("");
-    if (connected) {
+    if (isConnected) {
       const response = await fetch("/api/razorpay/sync", { method: "POST" });
       const payload = (await response.json()) as { error?: string; synced?: number };
       if (!response.ok) {
@@ -74,16 +76,16 @@ export function RazorpayConnection({ onSynced }: RazorpayConnectionProps) {
             <PlugsConnected size={20} className="text-primary" />
             <p className="text-sm font-medium text-ink">Razorpay</p>
           </div>
-          <Badge tone={connected || stored > 0 ? "matched" : "review"}>
-            {connected || stored > 0 ? "Connected" : "Not connected"}
+          <Badge tone={isConnected || storedCount > 0 ? "matched" : "review"}>
+            {isConnected || storedCount > 0 ? "Connected" : "Not connected"}
           </Badge>
         </div>
         <ul className="mt-4 space-y-1.5 text-sm text-muted">
           <li>
-            {connected ? "Payments sync available" : `${stored} payments available`}
+            {isConnected ? "Payments sync available" : `${storedCount} payments available`}
           </li>
           <li>
-            {connected ? "Settlements sync available" : "Use Sync Razorpay before you run"}
+            {isConnected ? "Settlements sync available" : "Use Sync Razorpay before you run"}
           </li>
         </ul>
       </div>

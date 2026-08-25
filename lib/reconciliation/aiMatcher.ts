@@ -6,20 +6,25 @@ import { z } from "zod";
 import { selectCandidates } from "./candidateSelector";
 import {
   MATCH_CONSTANTS,
-  type AIMatchDecision,
   type MatchResult,
   type NormalizedLedgerRecord,
   type NormalizedRazorpayRecord,
-  type ProposedException,
 } from "./types";
 
-const DecisionSchema = z.object({
-  ledgerRecordId: z.string().min(1),
-  razorpayRecordIds: z.array(z.string().min(1)),
+const aiDecisionSchema = z.object({
   decision: z.enum(["match", "unresolved"]),
+  razorpayRecordIds: z.array(z.string()),
   confidence: z.number().min(0).max(1),
-  reason: z.string().min(1).max(600),
+  reason: z.string().min(1),
 });
+
+export type AIMatchDecision = z.infer<typeof aiDecisionSchema>;
+
+export type UnresolvedItem = {
+  ledger: NormalizedLedgerRecord;
+  aiDecision?: AIMatchDecision | null;
+  candidates: NormalizedRazorpayRecord[];
+};
 
 const groq = process.env.GROQ_API_KEY
   ? new Groq({ apiKey: process.env.GROQ_API_KEY })
@@ -43,140 +48,136 @@ export async function aiMatcher(
   ledgers: NormalizedLedgerRecord[],
   razorpayRecords: NormalizedRazorpayRecord[],
   usedIds: Set<string>
-): Promise<{ matches: MatchResult[]; reviews: MatchResult[]; exceptions: ProposedException[] }> {
+): Promise<{
+  matches: MatchResult[];
+  unresolved: UnresolvedItem[];
+}> {
+  if (!process.env.GROQ_API_KEY || !groq) {
+    console.error("[AI] GROQ_API_KEY is missing");
+  }
+
   const matches: MatchResult[] = [];
-  const reviews: MatchResult[] = [];
-  const exceptions: ProposedException[] = [];
+  const unresolved: UnresolvedItem[] = [];
+
+  let reviewedCount = 0;
+  let acceptedCount = 0;
+  let unresolvedCount = 0;
+  let failedCount = 0;
 
   for (const ledger of ledgers) {
-    const candidates = selectCandidates(ledger, razorpayRecords, usedIds);
+    const candidates = selectCandidates(ledger, razorpayRecords, usedIds, MATCH_CONSTANTS.maxAiCandidates);
+
     if (candidates.length === 0) {
-      reviews.push({
-        ledger,
-        razorpayRecords: [],
-        method: "unresolved",
-        status: "review",
-        reason: "This order is in the ledger, but no matching Razorpay payment or settlement was found.",
-      });
-      exceptions.push({
-        ledger,
-        type: "MISSING_RAZORPAY_RECORD",
-        reason: "This order is in the ledger, but no matching Razorpay payment or settlement was found.",
-      });
+      unresolved.push({ ledger, aiDecision: null, candidates: [] });
+      unresolvedCount++;
       continue;
     }
 
-    const decision = await decide(ledger, candidates);
-    const chosen = candidates.filter((record) => decision.razorpayRecordIds.includes(record.id));
+    reviewedCount++;
+    console.log(`[AI] Ledger: ${ledger.orderId}`);
+    console.log(`[AI] Candidates: ${candidates.length}`);
+
+    if (!groq) {
+      unresolved.push({ ledger, aiDecision: null, candidates });
+      unresolvedCount++;
+      failedCount++;
+      continue;
+    }
+
+    let decision: AIMatchDecision | null = null;
+
+    try {
+      console.log("[AI] Calling Groq");
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        temperature: 0,
+        response_format: {
+          type: "json_object",
+        },
+        messages: [
+          {
+            role: "system",
+            content: `
+You are a financial reconciliation assistant.
+
+You receive one merchant ledger record and a small set of possible Razorpay records.
+
+Your task is to decide whether one or more candidate Razorpay records plausibly correspond to the ledger record.
+
+Rules:
+- Never invent records.
+- Never invent IDs.
+- Never modify amounts.
+- Never fabricate fees, dates, or settlements.
+- Use only the supplied candidates.
+- Prefer unresolved if evidence is weak.
+- A different order ID is not automatically wrong if amount, date and other evidence strongly support the match.
+- A large date gap should reduce confidence.
+- Duplicate or equally plausible candidates should normally remain unresolved.
+- Return valid JSON only.
+            `,
+          },
+          {
+            role: "user",
+            content: JSON.stringify({
+              ledger: {
+                id: ledger.id,
+                orderId: ledger.orderId,
+                customer: ledger.customer ?? null,
+                amount: formatINR(ledger.amountPaise),
+                date: ledger.date.toISOString().slice(0, 10),
+              },
+              candidates: candidates.map(toPromptRecord),
+            }),
+          },
+        ],
+      });
+
+      const content = completion.choices[0]?.message?.content ?? undefined;
+      if (!content) {
+        throw new Error("Groq returned empty response");
+      }
+      console.log("[AI] Raw Groq response:", content);
+
+      const parsed = JSON.parse(content);
+      decision = aiDecisionSchema.parse(parsed);
+      console.log("[AI] Parsed decision:", decision);
+    } catch (error) {
+      console.error("[AI] Groq error:", error);
+      failedCount++;
+    }
+
+    const allowedIds = new Set(candidates.map((c) => c.id));
+    const validMatchedIds = decision?.razorpayRecordIds.filter((id) => allowedIds.has(id)) ?? [];
 
     if (
+      decision &&
       decision.decision === "match" &&
       decision.confidence >= MATCH_CONSTANTS.aiAcceptConfidence &&
-      chosen.length > 0
+      validMatchedIds.length > 0
     ) {
-      chosen.forEach((record) => usedIds.add(record.id));
+      const matchedCandidates = candidates.filter((c) => validMatchedIds.includes(c.id));
+      matchedCandidates.forEach((c) => usedIds.add(c.id));
+
       matches.push({
         ledger,
-        razorpayRecords: chosen,
+        razorpayRecords: matchedCandidates,
         method: "ai_assisted",
         confidence: decision.confidence,
         status: "matched",
         reason: decision.reason,
       });
-      continue;
+      acceptedCount++;
+    } else {
+      unresolved.push({ ledger, aiDecision: decision, candidates });
+      unresolvedCount++;
     }
-
-    const reviewReason =
-      decision.confidence < MATCH_CONSTANTS.aiAcceptConfidence && decision.decision === "match"
-        ? "A possible match was found, but there is not enough confidence to close it automatically."
-        : decision.reason;
-
-    reviews.push({
-      ledger,
-      razorpayRecords: chosen.length > 0 ? chosen : candidates.slice(0, 1),
-      method: "unresolved",
-      status: "review",
-      reason: reviewReason,
-    });
-    exceptions.push({
-      ledger,
-      type:
-        decision.decision === "match" && decision.confidence < MATCH_CONSTANTS.aiAcceptConfidence
-          ? "AI_LOW_CONFIDENCE"
-          : "AMBIGUOUS_MATCH",
-      reason:
-        candidates.length > 1
-          ? "Two Razorpay payments are plausible matches for this ledger entry, but neither has enough evidence to resolve automatically."
-          : reviewReason,
-      closest: (chosen[0] ?? candidates[0]),
-    });
   }
 
-  return { matches, reviews, exceptions };
-}
+  console.log(`[AI] Records reviewed: ${reviewedCount}`);
+  console.log(`[AI] Accepted matches: ${acceptedCount}`);
+  console.log(`[AI] Left unresolved: ${unresolvedCount}`);
+  console.log(`[AI] Failed calls: ${failedCount}`);
 
-async function decide(
-  ledger: NormalizedLedgerRecord,
-  candidates: NormalizedRazorpayRecord[]
-): Promise<AIMatchDecision> {
-  const fallback: AIMatchDecision = {
-    ledgerRecordId: ledger.id,
-    razorpayRecordIds: [],
-    decision: "unresolved",
-    confidence: 0,
-    reason:
-      "Two Razorpay payments are plausible matches for this ledger entry, but neither has enough evidence to resolve automatically.",
-  };
-
-  if (!groq) return fallback;
-
-  try {
-    const input = {
-      ledger: {
-        id: ledger.id,
-        orderId: ledger.orderId,
-        amount: formatINR(ledger.amountPaise),
-        date: ledger.date.toISOString().slice(0, 10),
-      },
-      candidates: candidates.map(toPromptRecord),
-    };
-
-    const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      temperature: 0,
-      response_format: {
-        type: "json_object",
-      },
-      messages: [
-        {
-          role: "system",
-          content: `
-You assist with financial reconciliation.
-
-Only evaluate the records provided.
-Never invent payments, identifiers, amounts, fees, dates, or settlements.
-Prefer unresolved over an uncertain match.
-Return valid JSON only.
-          `,
-        },
-        {
-          role: "user",
-          content: JSON.stringify(input),
-        },
-      ],
-    });
-
-    const raw = completion.choices[0]?.message?.content;
-    if (!raw) return fallback;
-    const parsed = DecisionSchema.parse(JSON.parse(raw));
-    const allowed = new Set(candidates.map((record) => record.id));
-    return {
-      ...parsed,
-      ledgerRecordId: ledger.id,
-      razorpayRecordIds: parsed.razorpayRecordIds.filter((id) => allowed.has(id)),
-    };
-  } catch (error) {
-    console.error("Groq AI matcher failed:", error);
-    return fallback;
-  }
+  return { matches, unresolved };
 }

@@ -30,6 +30,40 @@ const groq = process.env.GROQ_API_KEY
   ? new Groq({ apiKey: process.env.GROQ_API_KEY })
   : null;
 
+function normalizeGroqDecision(raw: any): Record<string, unknown> {
+  if (typeof raw !== "object" || raw === null) return raw;
+
+  if (raw.decision) return raw;
+
+  if (raw.status === "unresolved" || raw.unresolved === true || raw.resolved === false) {
+    return {
+      decision: "unresolved",
+      razorpayRecordIds: [],
+      confidence: 0,
+      reason: typeof raw.reason === "string" ? raw.reason : "AI could not determine a confident match.",
+    };
+  }
+
+  if (raw.match) {
+    const ids = Array.isArray(raw.match)
+      ? raw.match
+      : typeof raw.match === "string"
+        ? [raw.match]
+        : typeof raw.candidateId === "string"
+          ? [raw.candidateId]
+          : [];
+
+    return {
+      decision: ids.length > 0 ? "match" : "unresolved",
+      razorpayRecordIds: ids,
+      confidence: typeof raw.confidence === "number" ? raw.confidence : 0.9,
+      reason: typeof raw.reason === "string" ? raw.reason : "AI identified the strongest candidate match.",
+    };
+  }
+
+  return raw;
+}
+
 function toPromptRecord(record: NormalizedRazorpayRecord) {
   return {
     id: record.id,
@@ -97,25 +131,48 @@ export async function aiMatcher(
         messages: [
           {
             role: "system",
-            content: `
-You are a financial reconciliation assistant.
+            content: `You are a financial reconciliation assistant.
 
-You receive one merchant ledger record and a small set of possible Razorpay records.
+You receive one ledger record and up to 5 candidate Razorpay records.
 
-Your task is to decide whether one or more candidate Razorpay records plausibly correspond to the ledger record.
+You MUST return ONLY one JSON object using exactly this schema:
+
+{
+  "decision": "match" | "unresolved",
+  "razorpayRecordIds": ["candidate-id"],
+  "confidence": 0.0 to 1.0,
+  "reason": "short explanation"
+}
 
 Rules:
-- Never invent records.
-- Never invent IDs.
-- Never modify amounts.
-- Never fabricate fees, dates, or settlements.
-- Use only the supplied candidates.
-- Prefer unresolved if evidence is weak.
-- A different order ID is not automatically wrong if amount, date and other evidence strongly support the match.
-- A large date gap should reduce confidence.
-- Duplicate or equally plausible candidates should normally remain unresolved.
-- Return valid JSON only.
-            `,
+
+- Do not return any other keys.
+- Do not return "status".
+- Do not return "match".
+- Do not return "matched".
+- Do not return "unresolved": true.
+- Do not return "candidateId".
+- Do not return "matches".
+- Always include all four keys:
+  decision
+  razorpayRecordIds
+  confidence
+  reason
+
+If unresolved, return:
+
+{
+  "decision": "unresolved",
+  "razorpayRecordIds": [],
+  "confidence": 0.0,
+  "reason": "explanation"
+}
+
+If matched, razorpayRecordIds must contain only IDs from the provided candidates.
+
+Never invent IDs.
+Never invent amounts, dates, fees, or settlements.
+Prefer unresolved when evidence is weak.`,
           },
           {
             role: "user",
@@ -128,6 +185,12 @@ Rules:
                 date: ledger.date.toISOString().slice(0, 10),
               },
               candidates: candidates.map(toPromptRecord),
+              requiredOutput: {
+                decision: "match | unresolved",
+                razorpayRecordIds: ["candidate-id"],
+                confidence: "number between 0 and 1",
+                reason: "short explanation",
+              },
             }),
           },
         ],
@@ -139,8 +202,9 @@ Rules:
       }
       console.log("[AI] Raw Groq response:", content);
 
-      const parsed = JSON.parse(content);
-      decision = aiDecisionSchema.parse(parsed);
+      const parsedRaw = JSON.parse(content);
+      const normalized = normalizeGroqDecision(parsedRaw);
+      decision = aiDecisionSchema.parse(normalized);
       console.log("[AI] Parsed decision:", decision);
     } catch (error) {
       console.error("[AI] Groq error:", error);

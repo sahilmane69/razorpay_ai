@@ -2,7 +2,6 @@
 
 An AI-assisted finance reconciliation dashboard for matching merchant ledger records with Razorpay payments and settlements. The app helps finance teams upload ledger CSVs, sync or load Razorpay transaction data, run reconciliation, and review only the exceptions that need attention.
 
-> Image placeholder: add your product screenshot or demo image at `public/readme-preview.png`, then uncomment the line below.
 
 <!-- ![Razorpay AI Reconciliation dashboard](public/readme-preview.png) -->
 
@@ -161,16 +160,4 @@ The matching engine runs in stages:
 
 This staged design keeps obvious matches fast and deterministic while reserving AI for the records that actually need judgment.
 
-## Submission Notes
 
-This project is intended as a Razorpay-focused AI reconciliation prototype. Before submitting, add a strong screenshot or demo image to:
-
-```text
-public/readme-preview.png
-```
-
-Then uncomment the image line near the top of this README.
-
-## License
-
-This repository is currently private/prototype code. Add a license before publishing for public reuse.
